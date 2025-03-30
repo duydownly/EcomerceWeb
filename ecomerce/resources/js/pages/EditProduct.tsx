@@ -3,18 +3,47 @@ import axios from 'axios';
 import './AddProduct.css';
 
 const EditProduct: React.FC<{ product: any; onProductUpdated: () => void }> = ({ product, onProductUpdated }) => {
-    // Log the product.categories data for debugging
-    console.log('Product Categories:', product.categories);
-
     const [image, setImage] = useState<File | null>(null);
-    const [productName, setProductName] = useState<string>(product.name || '');
-    const [stockQuantity, setStockQuantity] = useState<number | ''>(product.stock || '');
-    const [price, setPrice] = useState<string>(product.price || '');
-    const [categorySelections, setCategorySelections] = useState<string[]>(
-        product.categories.map((c: any) => c.id.toString()) || []
-    );
-    const [previewImage, setPreviewImage] = useState<string | null>(product.image || null);
+    const [productName, setProductName] = useState<string>('');
+    const [stockQuantity, setStockQuantity] = useState<number | ''>('');
+    const [price, setPrice] = useState<string>('');
+    const [categorySelections, setCategorySelections] = useState<string[]>([]);
+    const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
     const [isUpdated, setIsUpdated] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (product) {
+            setProductName(product.name || '');
+            setStockQuantity(product.stock || '');
+            setPrice(product.price || '');
+            setPreviewImage(product.image || null);
+            setCategorySelections(
+                Array.isArray(product.categories) ? product.categories.map((c: any) => c.id.toString()) : []
+            );
+        }
+    }, [product]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get('/categories');
+                setCategories(response.data.data);
+
+                if (product.categories) {
+                    const mappedCategoryIds = product.categories.map((category: { name: string }) => {
+                        const foundCategory = response.data.data.find((c: { name: string }) => c.name === category.name);
+                        return foundCategory ? foundCategory.id : '';
+                    });
+                    setCategorySelections(mappedCategoryIds);
+                }
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        fetchCategories();
+    }, [product]);
 
     useEffect(() => {
         const hasChanges =
@@ -60,26 +89,18 @@ const EditProduct: React.FC<{ product: any; onProductUpdated: () => void }> = ({
         if (image) {
             formData.append('image', image);
         }
-        categorySelections.forEach((catId) => {
-            const category = product.categories.find((c: any) => c.id.toString() === catId);
-            if (category) {
-                formData.append('categories[]', JSON.stringify({ id: category.id.toString(), name: category.name }));
-            }
-        });
-
-        console.log('Form Data:', Object.fromEntries(formData.entries())); // Log to verify
+        categorySelections.forEach((catId) => formData.append('categories[]', catId));
 
         try {
-            const response = await axios.post(`/updateproduct/${product.id}`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+            const { data } = await axios.post(`/updateproduct/${product.id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            console.log('Response:', response.data);
-            alert('Product updated successfully!');
+            alert(data.message || 'Product updated successfully!');
             onProductUpdated();
-        } catch (error) {
-            console.error('API Error:', error);
-            alert('Failed to update product!');
+        } catch (error: any) {
+            console.error('Failed to update product:', error);
+            alert(error.response?.data?.message || 'Failed to update product!');
         }
     };
 
@@ -124,7 +145,7 @@ const EditProduct: React.FC<{ product: any; onProductUpdated: () => void }> = ({
                                 required
                             >
                                 <option value="">Select Category</option>
-                                {product.categories.map((category: any) => (
+                                {categories.map((category) => (
                                     <option key={category.id} value={category.id}>
                                         {category.name}
                                     </option>
@@ -143,9 +164,7 @@ const EditProduct: React.FC<{ product: any; onProductUpdated: () => void }> = ({
                     ➕ Add More Category
                 </button>
 
-                <div className="form-group">
-                  
-                </div>
+                <div className="form-group"></div>
 
                 {isUpdated && <button className="submit-button" type="submit">Update Product</button>}
             </form>

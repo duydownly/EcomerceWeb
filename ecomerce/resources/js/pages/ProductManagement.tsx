@@ -13,7 +13,9 @@ interface Product {
     price: string;
     category_names: string[];
     description: string;
+    categories?: { id: string; name: string }[]; // Added optional `categories` property
 }
+Modal.setAppElement('body'); // Dùng 'body' vì Inertia không có #root như React thuần
 
 const ProductManagement: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -76,11 +78,11 @@ const ProductManagement: React.FC = () => {
     const openEditModal = (product: Product) => {
         setSelectedProduct({
             ...product,
-            category_names: product.category_names.map((name, index) => ({
+            categories: product.category_names.map((name, index) => ({
                 id: `category-${index + 1}`, // Replace with actual category IDs if available
                 name,
             })),
-        } as Product & { category_names: { id: string; name: string }[] });
+        }); // Ensure `categories` is passed correctly
         setEditProductModalIsOpen(true);
     };
 
@@ -111,20 +113,15 @@ const ProductManagement: React.FC = () => {
     
     const updateDescription = async () => {
         if (!selectedProduct) return;
-        
+    
         try {
             console.log(`Updating description for product ${selectedProduct.id}`);
-            const response = await fetch(`/api/products/${selectedProduct.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    description: description
-                })
+    
+            const response = await axios.put(`/adddescriptionproducts/${selectedProduct.id}`, {
+                description: description
             });
-            
-            if (response.ok) {
+    
+            if (response.status === 200) {
                 console.log('Description updated successfully');
                 setProducts(products.map(product =>
                     product.id === selectedProduct.id ? { ...product, description } : product
@@ -138,6 +135,7 @@ const ProductManagement: React.FC = () => {
             setError(err instanceof Error ? err.message : 'Failed to update product');
         }
     };
+    
 
     if (isLoading) {
         return <div className="text-center py-8">Loading...</div>;
@@ -237,10 +235,7 @@ const ProductManagement: React.FC = () => {
                             name: selectedProduct.name,
                             stock: parseInt(selectedProduct.stock.replace(/,/g, ''), 10), // Convert stock back to number
                             price: selectedProduct.price.replace(/[^0-9]/g, ''), // Remove currency formatting
-                            categories: selectedProduct.category_names.map((name, index) => ({
-                                id: index + 1, // Mock category ID (replace with actual IDs if available)
-                                name,
-                            })),
+                            categories: selectedProduct.categories || [], // Pass categories correctly
                             description: selectedProduct.description,
                             image: selectedProduct.image.props.src, // Extract image URL
                         }}

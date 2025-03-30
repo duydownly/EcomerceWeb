@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 // Định nghĩa kiểu dữ liệu cho người dùng
 interface User {
@@ -11,10 +12,19 @@ interface User {
 }
 
 const UserManagement = () => {
-    const [users, setUsers] = useState<User[]>([
-        { id: 1, name: 'John Doe', email: 'john@example.com', address: '123 Main St', phone: '123-456-7890', banned: false },
-        { id: 2, name: 'Jane Smith', email: 'jane@example.com', address: '456 Oak St', phone: '987-654-3210', banned: false },
-    ]);
+    const [users, setUsers] = useState<User[]>([]);
+
+    // Lấy dữ liệu từ API khi component mount
+    useEffect(() => {
+        axios.get('/getusers')
+            .then(response => {
+                console.log('API Response:', response.data); // Log dữ liệu trả về từ API
+                setUsers(response.data);
+            })
+            .catch(error => {
+                console.error('Error fetching users:', error); // Log lỗi nếu xảy ra
+            });
+    }, []);
 
     const toggleBan = (userId: number): void => {
         setUsers(users.map(user => 
@@ -25,7 +35,6 @@ const UserManagement = () => {
     const editUser = (userId: number): void => {
         console.log(`Edit user with ID: ${userId}`);
     };
-
     return (
         <div>
             <h2 className="text-xl font-bold mb-4">Quản lý khách hàng</h2>

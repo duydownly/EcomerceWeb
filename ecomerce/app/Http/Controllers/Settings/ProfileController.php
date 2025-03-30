@@ -21,8 +21,18 @@ class ProfileController extends Controller
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'auth' => [
+                'user' => [
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'phone' => $request->user()->phone, // Thêm phone
+                    'address' => $request->user()->address, // Thêm address
+                    'email_verified_at' => $request->user()->email_verified_at,
+                ],
+            ],
         ]);
     }
+    
 
     /**
      * Update the user's profile settings.
@@ -30,16 +40,16 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
-
+    
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
-
-        $request->user()->save();
-
+    
+        $request->user()->save(); // Lưu user
+    
         return to_route('profile.edit');
     }
-
+    
     /**
      * Delete the user's account.
      */

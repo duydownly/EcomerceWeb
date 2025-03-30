@@ -128,45 +128,69 @@ class ProductController extends Controller {
         return response()->json(['message' => 'Product deleted successfully']);
     }
     public function update(Request $request, $id)
-{
-    $product = DB::table('products')->where('id', $id)->first();
+    {
+        $product = DB::table('products')->where('id', $id)->first();
 
-    if (!$product) {
-        return response()->json(['message' => 'Product not found'], 404);
-    }
-
-    // Xử lý ảnh mới
-    $imagePath = $product->image; // Mặc định giữ ảnh cũ
-    if ($request->hasFile('image')) {
-        if ($product->image) {
-            Storage::delete('public/' . $product->image); // Xóa ảnh cũ
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
         }
-        $path = $request->file('image')->store('public/images');
-        $imagePath = str_replace('public/', '', $path); // Lưu đường dẫn tương đối
-    }
 
-    // Cập nhật sản phẩm bằng RAW QUERY
-    DB::update("
-        UPDATE products 
-        SET name = ?, stock = ?, price = ?, image = ?, updated_at = NOW() 
-        WHERE id = ?
-    ", [
-        $request->input('name', $product->name),
-        $request->input('stock', $product->stock),
-        $request->input('price', $product->price),
-        $imagePath,
-        $id
-    ]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'stock' => 'required|integer',
+            'price' => 'required|numeric',
+            'image' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'categories' => 'required|array',
+            'categories.*' => 'integer|exists:categories,id',
+        ]);
 
-    // Cập nhật danh mục sản phẩm (bảng trung gian category_product)
-    if ($request->has('categories')) {
-        DB::table('category_product')->where('product_id', $id)->delete(); // Xóa danh mục cũ
+        // Handle new image upload
+        $imagePath = $product->image; // Keep the old image by default
+        if ($request->hasFile('image')) {
+            if ($product->image) {
+                Storage::delete('public/' . $product->image); // Delete old image
+            }
+            $path = $request->file('image')->store('images', 'public');
+            $imagePath = str_replace('public/', '', $path); // Save relative path
+        }
+
+        // Update product
+        DB::update("
+            UPDATE products 
+            SET name = ?, stock = ?, price = ?, image = ?, updated_at = NOW() 
+            WHERE id = ?
+        ", [
+            $request->input('name', $product->name),
+            $request->input('stock', $product->stock),
+            $request->input('price', $product->price),
+            $imagePath,
+            $id
+        ]);
+
+        // Update product categories
+        DB::table('category_product')->where('product_id', $id)->delete(); // Remove old categories
         foreach ($request->categories as $categoryId) {
             DB::insert("INSERT INTO category_product (product_id, category_id) VALUES (?, ?)", [$id, $categoryId]);
         }
+
+        return response()->json(['message' => 'Product updated successfully']);
     }
+    public function updateDescription(Request $request, $id)
+    {
+        $request->validate([
+            'description' => 'required|string|max:255',
+        ]);
 
-    return response()->json(['message' => 'Product updated successfully']);
-}
+        $affectedRows = DB::update("UPDATE products SET description = ? WHERE id = ?", [
+            $request->description,
+            $id
+        ]);
 
+        if ($affectedRows === 0) {
+            return response()->json(['message' => 'Product not found or no changes made'], 404);
+        }
+
+        return response()->json(['message' => 'Description updated successfully']);
+    }
+    
 }

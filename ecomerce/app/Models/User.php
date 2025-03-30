@@ -21,8 +21,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-    ];
+        'phone',    // Thêm trường phone
+        'address',  // Thêm trường address
+        'banned', // Thêm trường banned
 
+    ];
+    
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -43,6 +47,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'banned' => 'boolean', // Ép kiểu banned thành boolean
+
         ];
     }
 }

@@ -35,8 +35,11 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    phone?: string; // Thêm số điện thoại
+    address?: string; // Thêm địa chỉ
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
