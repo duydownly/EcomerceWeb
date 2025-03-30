@@ -1,37 +1,54 @@
 "use client";
 import { useState, useEffect } from "react";
 
-const ProductDetails = ({ product }) => {
-    const [showModal, setShowModal] = useState(false);
-    const [cartData, setCartData] = useState([]);
+type Product = {
+    id: number;
+    name: string;
+    price: number;
+    description: string;
+    image: { props: { src: string } };
+    additionalImages?: string[];
+};
+
+type CartItem = {
+    id: number;
+    name: string;
+    quantity: number;
+    price: number;
+    image: string;
+};
+
+interface ProductDetailsProps {
+    product: Product;
+}
+
+const ProductDetails: React.FC<ProductDetailsProps> = ({ product }) => {
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [cartData, setCartData] = useState<CartItem[]>([]);
 
     useEffect(() => {
-        const storedCartData = JSON.parse(localStorage.getItem('cartData')) || [];
+        const storedCartData = JSON.parse(localStorage.getItem('cartData') || '[]') as CartItem[];
         setCartData(storedCartData);
     }, []);
 
-    // Hàm định dạng giá tiền
-    const formatPrice = (price) => {
+    const formatPrice = (price: number): string => {
         return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
     };
 
-    const handleAddToCart = () => {
+    const handleAddToCart = (): void => {
         const existingProductIndex = cartData.findIndex(item => item.id === product.id);
-        let updatedCartData;
-
-        // Giữ nguyên giá tiền, không cần chuyển đổi
-        const price = product.price;
+        let updatedCartData: CartItem[];
 
         if (existingProductIndex !== -1) {
             updatedCartData = cartData.map((item, index) => 
                 index === existingProductIndex ? { ...item, quantity: item.quantity + 1 } : item
             );
         } else {
-            const newProduct = {
+            const newProduct: CartItem = {
                 id: product.id,
                 name: product.name,
                 quantity: 1,
-                price: price, // Giữ nguyên giá tiền
+                price: product.price,
                 image: product.image.props.src,
             };
             updatedCartData = [...cartData, newProduct];
@@ -42,13 +59,13 @@ const ProductDetails = ({ product }) => {
         setShowModal(true);
     };
 
-    const handleRemoveFromCart = (productId) => {
+    const handleRemoveFromCart = (productId: number): void => {
         const updatedCartData = cartData.filter(item => item.id !== productId);
         setCartData(updatedCartData);
         localStorage.setItem('cartData', JSON.stringify(updatedCartData));
     };
 
-    const calculateSubtotal = () => {
+    const calculateSubtotal = (): number => {
         return cartData.reduce((total, item) => total + item.price * item.quantity, 0);
     };
 
@@ -58,7 +75,7 @@ const ProductDetails = ({ product }) => {
                 <div className="w-1/2">
                     <img src={product.image.props.src} alt={product.name} className="w-full h-auto" />
                     <div className="flex mt-2 space-x-2">
-                        {product.additionalImages && product.additionalImages.map((img, index) => (
+                        {product.additionalImages?.map((img, index) => (
                             <img key={index} src={img} alt={`Additional ${index}`} className="w-16 h-16 object-cover" />
                         ))}
                     </div>
@@ -66,7 +83,7 @@ const ProductDetails = ({ product }) => {
                 </div>
                 <div className="w-1/2 pl-6">
                     <h1 className="text-2xl font-bold">{product.name}</h1>
-                    <p className="text-red-500 text-xl mt-2">{formatPrice(product.price)}</p> {/* Hiển thị giá tiền đã định dạng */}
+                    <p className="text-red-500 text-xl mt-2">{formatPrice(product.price)}</p>
                     <p className="mt-4">{product.description}</p>
                 </div>
             </div>
@@ -79,21 +96,16 @@ const ProductDetails = ({ product }) => {
                                 <img src={item.image} alt={item.name} className="w-16 h-16 object-cover" />
                                 <div className="flex-1 ml-4">
                                     <p>{item.name}</p>
-                                    <p className="text-red-500">{formatPrice(item.price)}</p> {/* Hiển thị giá tiền đã định dạng */}
+                                    <p className="text-red-500">{formatPrice(item.price)}</p>
                                 </div>
                                 <input type="number" value={item.quantity} readOnly className="w-12 text-center border" />
-                                <p className="text-red-500">{formatPrice(item.price * item.quantity)}</p> {/* Hiển thị tổng giá tiền đã định dạng */}
-                                <button 
-                                    className="text-gray-500 ml-4" 
-                                    onClick={() => handleRemoveFromCart(item.id)}
-                                >
-                                    ×
-                                </button>
+                                <p className="text-red-500">{formatPrice(item.price * item.quantity)}</p>
+                                <button className="text-gray-500 ml-4" onClick={() => handleRemoveFromCart(item.id)}>×</button>
                             </div>
                         ))}
                         <div className="flex justify-between items-center mt-4">
                             <p className="text-xl font-bold">Subtotal</p>
-                            <p className="text-red-500 text-xl">{formatPrice(calculateSubtotal())}</p> {/* Hiển thị tổng giá tiền đã định dạng */}
+                            <p className="text-red-500 text-xl">{formatPrice(calculateSubtotal())}</p>
                         </div>
                         <div className="flex justify-end items-center mt-4 space-x-4">
                             <button className="bg-gray-300 px-4 py-2" onClick={() => setShowModal(false)}>Continue Shopping</button>

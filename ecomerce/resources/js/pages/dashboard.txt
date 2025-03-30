@@ -1,0 +1,32 @@
+import { router } from "@inertiajs/react";
+import AppLayout from "@/layouts/app-layout";
+import { Head } from "@inertiajs/react";
+
+const products = [
+    { id: 1, image: "/images/product1.png", name: "Văn và Biến Hình Siêu Nhân", price: 50000, category_id: "1057357933778075649", description: "Mô tả sản phẩm 1" },
+    { id: 3, image: "/images/product3.png", name: "Biến Hình Siêu Nhân", price: 500000, category_id: "1057357933778108417", description: "Mô tả sản phẩm 3" },
+    { id: 4, image: "/images/product4.png", name: "Hộp Mù Lắp Ráp Kamen Rider", price: 50000, category_id: "1057357933778141185", description: "Mô tả sản phẩm 4" },
+];
+
+const Dashboard = () => {
+    return (
+        <AppLayout>
+            <Head title="Dashbssssoard" />
+            <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                {products.map(product => (
+                    <div 
+                        key={product.id} 
+                        className="border rounded-xl p-4 cursor-pointer" 
+                        onClick={() => router.visit(`/productdetails/${product.id}`)}
+                        >
+                        <img src={product.image} alt={product.name} className="w-full h-auto" />
+                        <h2 className="text-lg font-bold mt-2">{product.name}</h2>
+                        <p className="text-red-500">{product.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</p>
+                    </div>
+                ))}
+            </div>
+        </AppLayout>
+    );
+};
+
+export default Dashboard;

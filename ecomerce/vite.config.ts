@@ -5,21 +5,23 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+    server: {
+        host: 'localhost',
+        port: 5173,
+        strictPort: true,
+        hmr: {
+            protocol: 'ws',
+            host: 'localhost',
+        },
+    },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             ssr: 'resources/js/ssr.tsx',
-            refresh: true,
+            refresh: true, // Bật HMR (Hot Module Replacement)
         }),
         react(),
         tailwindcss(),
     ],
-    esbuild: {
-        jsx: 'automatic',
-    },
-    resolve: {
-        alias: {
-            'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
-        },
-    },
 });
+

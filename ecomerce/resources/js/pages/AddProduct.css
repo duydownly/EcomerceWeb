@@ -46,7 +46,61 @@
     margin: 0 auto; /* Center the button */
     text-align: center; /* Center the text inside the button */
 }
+.image-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
 
 .add-product-form .submit-button:hover {
     background-color: #0056b3;
 }
+.category-select-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.category-select {
+    width: 200px; /* Giới hạn chiều ngang */
+    padding: 5px;
+    margin-right: 10px;
+}
+
+.remove-category-button {
+    background-color: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.remove-category-button:hover {
+    background-color: darkred;
+}
+
+.add-category-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    display: block; /* Đảm bảo nút là block element */
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    width: 500px; /* Tăng chiều rộng */
+
+}
+
+.add-category-button:hover {
+    background-color: #007bff;
+    
+}
+

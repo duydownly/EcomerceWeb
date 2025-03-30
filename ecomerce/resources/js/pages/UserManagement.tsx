@@ -1,20 +1,28 @@
 import { useState } from 'react';
 
+// Định nghĩa kiểu dữ liệu cho người dùng
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    address: string;
+    phone: string;
+    banned: boolean;
+}
+
 const UserManagement = () => {
-    const [users, setUsers] = useState([
+    const [users, setUsers] = useState<User[]>([
         { id: 1, name: 'John Doe', email: 'john@example.com', address: '123 Main St', phone: '123-456-7890', banned: false },
         { id: 2, name: 'Jane Smith', email: 'jane@example.com', address: '456 Oak St', phone: '987-654-3210', banned: false },
-        // ...other users
     ]);
 
-    const toggleBan = (userId) => {
+    const toggleBan = (userId: number): void => {
         setUsers(users.map(user => 
             user.id === userId ? { ...user, banned: !user.banned } : user
         ));
     };
 
-    const editUser = (userId) => {
-        // Logic to edit user details
+    const editUser = (userId: number): void => {
         console.log(`Edit user with ID: ${userId}`);
     };
 
@@ -32,7 +40,7 @@ const UserManagement = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map(user => (
+                    {users.map((user) => (
                         <tr key={user.id} className="border-t">
                             <td className="py-2 text-center">{user.name}</td>
                             <td className="py-2 text-center">{user.email}</td>
