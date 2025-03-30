@@ -4,6 +4,7 @@ import axios from 'axios';
 import AddProduct from './AddProduct';
 import AddCategory from './AddCategory';
 import EditProduct from './EditProduct';
+import DeleteCategory from './DeleteCategory';
 
 interface Product {
     id: string; // Changed from number to string
@@ -25,8 +26,10 @@ const ProductManagement: React.FC = () => {
     const [addProductModalIsOpen, setAddProductModalIsOpen] = useState(false);
     const [addCategoryModalIsOpen, setAddCategoryModalIsOpen] = useState(false);
     const [editProductModalIsOpen, setEditProductModalIsOpen] = useState(false);
+    const [deleteCategoryModalIsOpen, setDeleteCategoryModalIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState(''); // Add state for search term
 
     const fetchProducts = async () => {
         try {
@@ -136,6 +139,9 @@ const ProductManagement: React.FC = () => {
         }
     };
     
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ); // Filter products based on search term
 
     if (isLoading) {
         return <div className="text-center py-8">Loading...</div>;
@@ -148,17 +154,26 @@ const ProductManagement: React.FC = () => {
     return (
         <div>
             <div className="flex justify-between mb-4">
-                <button className="bg-red-500 text-white px-4 py-2 rounded">Search Product</button>
                 <div>
-                    <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setAddCategoryModalIsOpen(true)}>
-                        Add Category
-                    </button>
+                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setAddCategoryModalIsOpen(true)}>
+    Add Category
+</button>
+<button className="bg-red-500 text-white px-4 py-2 rounded ml-2" onClick={() => setDeleteCategoryModalIsOpen(true)}>
+    Delete Category
+</button>
+
                     <button className="bg-red-500 text-white px-4 py-2 rounded ml-2" onClick={() => setAddProductModalIsOpen(true)}>
                         Add Product
                     </button>
                 </div>
             </div>
-            <input type="text" placeholder="Search..." className="px-4 py-2 border rounded mb-4 w-full" />
+            <input 
+                type="text" 
+                placeholder="Search..." 
+                className="px-4 py-2 border rounded mb-4 w-full" 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} // Update search term on input change
+            />
             <table className="min-w-full bg-white border border-gray-200">
                 <thead>
                     <tr>
@@ -172,34 +187,40 @@ const ProductManagement: React.FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {products.map(product => (
-                        <tr key={product.id}>
-                            <td className="py-2 px-4 border-b text-center">{product.image}</td>
-                            <td className="py-2 px-4 border-b text-center">{product.name}</td>
-                            <td className="py-2 px-4 border-b text-center">{product.stock}</td>
-                            <td className="py-2 px-4 border-b text-center">{product.price}</td>
-                            <td className="py-2 px-4 border-b text-center">
-                                {product.category_names.join(', ')} {/* Display category names */}
-                            </td>
-                            <td className="py-2 px-4 border-b text-center">
-                                <button className="text-blue-500" onClick={() => openModal(product)}>Details</button>
-                            </td>
-                            <td className="py-2 px-4 border-b text-center">
-                                <button 
-                                    className="px-4 py-2 ml-2 rounded bg-blue-500 text-white"
-                                    onClick={() => openEditModal(product)}
-                                >
-                                    Edit
-                                </button>
-                                <button 
-                                    className="px-4 py-2 ml-2 rounded bg-red-500 text-white"
-                                    onClick={() => deleteProduct(product.id, product.name)} // Pass `id` and `name`
-                                >
-                                    Delete
-                                </button>
-                            </td>
+                    {filteredProducts.length > 0 ? (
+                        filteredProducts.map(product => (
+                            <tr key={product.id}>
+                                <td className="py-2 px-4 border-b text-center">{product.image}</td>
+                                <td className="py-2 px-4 border-b text-center">{product.name}</td>
+                                <td className="py-2 px-4 border-b text-center">{product.stock}</td>
+                                <td className="py-2 px-4 border-b text-center">{product.price}</td>
+                                <td className="py-2 px-4 border-b text-center">
+                                    {product.category_names.join(', ')} {/* Display category names */}
+                                </td>
+                                <td className="py-2 px-4 border-b text-center">
+                                    <button className="text-blue-500" onClick={() => openModal(product)}>Details</button>
+                                </td>
+                                <td className="py-2 px-4 border-b text-center">
+                                    <button 
+                                        className="px-4 py-2 ml-2 rounded bg-blue-500 text-white"
+                                        onClick={() => openEditModal(product)}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button 
+                                        className="px-4 py-2 ml-2 rounded bg-red-500 text-white"
+                                        onClick={() => deleteProduct(product.id, product.name)} // Pass `id` and `name`
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan={7} className="py-4 text-center text-gray-500">No products found</td>
                         </tr>
-                    ))}
+                    )}
                 </tbody>
             </table>
             {selectedProduct && (
@@ -260,6 +281,13 @@ const ProductManagement: React.FC = () => {
             </Modal>
             <Modal isOpen={addCategoryModalIsOpen} onRequestClose={() => setAddCategoryModalIsOpen(false)} contentLabel="Add Category">
                 <AddCategory />
+            </Modal>
+            <Modal 
+                isOpen={deleteCategoryModalIsOpen} 
+                onRequestClose={() => setDeleteCategoryModalIsOpen(false)} 
+                contentLabel="Delete Category"
+            >
+                <DeleteCategory />
             </Modal>
         </div>
     );

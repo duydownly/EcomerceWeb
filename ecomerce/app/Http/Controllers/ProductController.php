@@ -193,4 +193,22 @@ class ProductController extends Controller {
         return response()->json(['message' => 'Description updated successfully']);
     }
     
+    public function getProductsForHomepage()
+    {
+        $query = "
+            SELECT 
+                p.id::text AS product_id,  -- Convert product ID to string
+                p.image, 
+                c.id::text AS category_id,  -- Convert category ID to string
+                c.name AS category_name
+            FROM products p
+            JOIN category_product cp ON p.id = cp.product_id
+            JOIN categories c ON cp.category_id = c.id
+            WHERE c.id IN ('1059392070229393409', '1059392123040759809', '1059392145917804545')  -- Ensure IDs are strings
+        ";
+
+        $products = DB::select($query);
+
+        return response()->json($products);
+    }
 }

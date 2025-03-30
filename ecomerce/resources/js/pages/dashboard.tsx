@@ -1,60 +1,35 @@
 import { router } from "@inertiajs/react";
 import AppLayout from "@/layouts/app-layout";
 import { Head } from "@inertiajs/react";
+import axios from "axios";
 
 "use client";
 
-import { useAuth } from '../hooks/useAuth';
-import { JSX, useEffect, useState } from 'react';
-import ProductDetails from './productdetails';
-import { AppSidebar } from '../components/app-sidebar';
+import { useAuth } from "../hooks/useAuth";
+import { JSX, useEffect, useState } from "react";
+import ProductDetails from "./productdetails";
+import { AppSidebar } from "../components/app-sidebar";
 
 // Định nghĩa kiểu dữ liệu cho sản phẩm
 interface Product {
     id: number;
-    image: JSX.Element;
+    image_url: string; // URL của ảnh thay vì JSX.Element
+    image: { props: { src: string } }; // Add the 'image' property to match the expected type
     name: string;
     price: number;
-    category_id: string;
+    categories: { id: string; name: string }[]; // Ensure this matches the API response
     description: string;
 }
 
-// Danh sách sản phẩm
-const products: Product[] = [
-    {
-        id: 1,
-        image: <img src="/images/product1.png" alt="Product 1" />,
-        name: "Văn và Biến Hình Siêu Nhân các loại - ...",
-        price: 50000,
-        category_id: "1057357933778075649",
-        description: "Description for DX Ranger Keys - Chia Khóa Biến hình hải..."
-    },
-    {
-        id: 3,
-        image: <img src="/images/product3.png" alt="Product 3" />,
-        name: "Văn và Biến Hình Siêu Nhân các loại - ...",
-        price: 500000,
-        category_id: "1057357933778108417",
-        description: "Description for Văn và Biến Hình Siêu Nhân các loại - ..."
-    },
-    {
-        id: 4,
-        image: <img src="/images/product4.png" alt="Product 4" />,
-        name: "Hộp Mù Lắp Ráp Kamen Rider Vol 1 2 Star...",
-        price: 50000,
-        category_id: "1057357933778141185",
-        description: "Description for Hộp Mù Lắp Ráp Kamen Rider Vol 1 2 Star..."
-    },
-];
-
 // Hàm tiện ích để định dạng giá
 const formatPrice = (price: number): string => {
-    return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    return price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
 const Dashboard: React.FC = () => {
     const { user } = useAuth();
     const [loading, setLoading] = useState<boolean>(true);
+    const [products, setProducts] = useState<Product[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -63,16 +38,35 @@ const Dashboard: React.FC = () => {
         if (user) {
             setLoading(false);
             if (user.is_admin) {
-                router.visit('/dashboardadmin');
+                router.visit("/dashboardadmin");
             }
         }
     }, [user]);
 
+    // Gọi API lấy danh sách sản phẩm
+    useEffect(() => {
+        axios.get("/products-with-categories")
+            .then((response) => {
+                console.log("API Response:", response.data);
+    
+                setProducts(response.data.map((product: any) => ({
+                    ...product,
+                    image_url: product.image || "/placeholder.jpg" // Use the same logic as ProductManagement
+                })));
+            })
+            .catch((error) => {
+                console.error("Error fetching products:", error);
+            });
+    }, []);
+    
+    
     if (loading) return <p>Loading...</p>;
 
     // Lọc sản phẩm theo danh mục được chọn
     const filteredProducts = selectedCategory
-        ? products.filter(product => product.category_id === selectedCategory)
+        ? products.filter((product) =>
+            product.categories.some((category) => category.id === selectedCategory)
+        )
         : products;
 
     return (
@@ -80,19 +74,20 @@ const Dashboard: React.FC = () => {
             <Head title="User Dashboard" />
             <div className="flex h-screen">
                 {/* Main Content */}
-                <div className="flex-1 p-6">
-                    <h1 className="text-2xl font-bold">Welcome to User Dashboard!</h1>
+                <div className="flex-1 p-6 text-center">
+                <h1 className="text-4xl font-bold mb-6">Welcome to Toyoto Shop!</h1>
+                <br/>
                     {selectedProduct ? (
                         <ProductDetails product={selectedProduct} />
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                            {filteredProducts.map(product => (
+                            {filteredProducts.map((product) => (
                                 <div
                                     key={product.id}
                                     className="border p-4 rounded cursor-pointer"
                                     onClick={() => setSelectedProduct(product)}
                                 >
-                                    {product.image}
+                                    <img src={product.image_url} alt={product.name} />
                                     <h2 className="text-lg font-bold mt-2">{product.name}</h2>
                                     <p className="text-red-500">{formatPrice(product.price)}</p>
                                 </div>

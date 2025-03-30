@@ -16,7 +16,7 @@ const AddCategory: React.FC = () => {
 
         try {
             const response = await axios.post('/addcategory', { name: categoryName });
-            setMessage(`✅ ${response.data.message}`);
+            alert(`✅ ${response.data.message}`); // Hiển thị thông báo pop-up
             setCategoryName('');
         } catch (error: any) {
             setMessage(`❌ ${error.response?.data?.message || 'Failed to add category'}`);

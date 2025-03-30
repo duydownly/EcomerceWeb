@@ -40,6 +40,7 @@ class CategoryController extends Controller
             ], 500);
         }
     }
+
     public function getCategories()
     {
         try {
@@ -63,5 +64,35 @@ class CategoryController extends Controller
             ], 500);
         }
     }
-    
+
+    public function deleteCategory($id)
+    {
+        try {
+            // Xóa category bằng SQL thô
+            $deleted = DB::delete('DELETE FROM categories WHERE id = ?', [$id]);
+
+            if ($deleted) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Category deleted successfully!',
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Category not found!',
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in deleting category', [
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong!',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

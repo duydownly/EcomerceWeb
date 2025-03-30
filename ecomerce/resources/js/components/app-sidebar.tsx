@@ -3,16 +3,10 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, List } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, List, Home } from 'lucide-react';
 import AppLogo from './app-logo';
-
-// Danh mục sản phẩm
-const categoryMap: Record<string, string> = {
-    "1057357933778010113": "Phụ Kiện Sentai Items",
-    "1057357933778075649": "Mô hình Robo Gattai",
-    "1057357933778108417": "Thiết Bị Biến Hình",
-    "1057357933778141185": "Kamen Rider - Driver"
-};
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 // Mục menu chính
 const mainNavItems: NavItem[] = [
@@ -20,6 +14,11 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Home',
+        href: '/',
+        icon: Home, // Dùng icon Home
     },
 ];
 
@@ -38,6 +37,30 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar({ onCategorySelect }: { onCategorySelect: (category: string | null) => void }) {
+    const [categories, setCategories] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        async function fetchCategories() {
+            try {
+                const response = await axios.get('/categories', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+                if (response.data.status === 'success') {
+                    const categoryMap = response.data.data.reduce((acc: Record<string, string>, category: any) => {
+                        acc[category.id] = category.name;
+                        return acc;
+                    }, {});
+                    setCategories(categoryMap);
+                }
+            } catch (error) {
+                console.error('Failed to fetch categories:', error);
+            }
+        }
+        fetchCategories();
+    }, []);
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -92,7 +115,7 @@ export function AppSidebar({ onCategorySelect }: { onCategorySelect: (category: 
                             Toàn bộ sản phẩm
                         </SidebarMenuButton>
                     </SidebarMenuItem>
-                    {Object.entries(categoryMap).map(([key, value]) => (
+                    {Object.entries(categories).map(([key, value]) => (
                         <SidebarMenuItem key={key}>
                             <SidebarMenuButton onClick={() => onCategorySelect(key)}>
                                 <List className="w-5 h-5 mr-2" />
