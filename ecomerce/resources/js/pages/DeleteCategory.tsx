@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './DeleteCategory.css';
 
-const DeleteCategory: React.FC = () => {
+const DeleteCategory: React.FC<{ onCategoryDeleted: () => void }> = ({ onCategoryDeleted }) => {
     const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [message, setMessage] = useState<string>('');
@@ -32,9 +32,10 @@ const DeleteCategory: React.FC = () => {
 
         try {
             const response = await axios.delete(`/deletecategory/${selectedCategory}`);
-            alert(`✅ ${response.data.message}`); // Hiển thị thông báo pop-up
+            alert(`✅ ${response.data.message}`); // Show success message as a pop-up
             setCategories(categories.filter((category) => category.id !== selectedCategory));
             setSelectedCategory('');
+            onCategoryDeleted(); // Notify parent to reload ProductManagement
         } catch (error: any) {
             setMessage(`❌ ${error.response?.data?.message || 'Failed to delete category'}`);
         }

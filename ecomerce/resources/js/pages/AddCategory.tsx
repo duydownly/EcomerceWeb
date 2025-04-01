@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './AddCategory.css';
 
-const AddCategory: React.FC = () => {
+const AddCategory: React.FC<{ onCategoryAdded: () => void }> = ({ onCategoryAdded }) => {
     const [categoryName, setCategoryName] = useState<string>('');
     const [message, setMessage] = useState<string>('');
 
@@ -18,6 +18,7 @@ const AddCategory: React.FC = () => {
             const response = await axios.post('/addcategory', { name: categoryName });
             alert(`✅ ${response.data.message}`); // Hiển thị thông báo pop-up
             setCategoryName('');
+            onCategoryAdded(); // Notify parent to reload ProductManagement
         } catch (error: any) {
             setMessage(`❌ ${error.response?.data?.message || 'Failed to add category'}`);
         }
@@ -31,6 +32,7 @@ const AddCategory: React.FC = () => {
                     <label>Category Name:</label>
                     <input
                         type="text"
+                        placeholder="Enter Category Name"
                         value={categoryName}
                         onChange={(e) => setCategoryName(e.target.value)}
                         required

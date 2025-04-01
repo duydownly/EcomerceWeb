@@ -26,6 +26,7 @@ Route::get('/productdetails/{id}', function ($id) {
 Route::post('/addcategory', [CategoryController::class, 'addCategory'])->name('addcategory');
 Route::get('/categories', [CategoryController::class, 'getCategories']);
 Route::delete('/deletecategory/{id}', [CategoryController::class, 'deleteCategory']);
+Route::put('/updatecategory/{id}', [CategoryController::class, 'updateCategory'])->name('updatecategory');
 
 Route::post('/addproducts', [ProductController::class, 'store']);
 Route::get('/products-with-categories', [ProductController::class, 'getProductsWithCategories']);

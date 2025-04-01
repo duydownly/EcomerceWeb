@@ -5,6 +5,7 @@ import AddProduct from './AddProduct';
 import AddCategory from './AddCategory';
 import EditProduct from './EditProduct';
 import DeleteCategory from './DeleteCategory';
+import UpdateCategory from './UpdateCategory';
 
 interface Product {
     id: string; // Changed from number to string
@@ -25,6 +26,7 @@ const ProductManagement: React.FC = () => {
     const [description, setDescription] = useState('');
     const [addProductModalIsOpen, setAddProductModalIsOpen] = useState(false);
     const [addCategoryModalIsOpen, setAddCategoryModalIsOpen] = useState(false);
+    const [updateCategoryModalIsOpen, setUpdateCategoryModalIsOpen] = useState(false);
     const [editProductModalIsOpen, setEditProductModalIsOpen] = useState(false);
     const [deleteCategoryModalIsOpen, setDeleteCategoryModalIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -155,13 +157,15 @@ const ProductManagement: React.FC = () => {
         <div>
             <div className="flex justify-between mb-4">
                 <div>
-                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setAddCategoryModalIsOpen(true)}>
-    Add Category
-</button>
-<button className="bg-red-500 text-white px-4 py-2 rounded ml-2" onClick={() => setDeleteCategoryModalIsOpen(true)}>
-    Delete Category
-</button>
-
+                    <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setAddCategoryModalIsOpen(true)}>
+                        Add Category
+                    </button>
+                    <button className="bg-red-500 text-white px-4 py-2 rounded ml-2" onClick={() => setUpdateCategoryModalIsOpen(true)}>
+                        Update Category
+                    </button>
+                    <button className="bg-red-500 text-white px-4 py-2 rounded ml-2" onClick={() => setDeleteCategoryModalIsOpen(true)}>
+                        Delete Category
+                    </button>
                     <button className="bg-red-500 text-white px-4 py-2 rounded ml-2" onClick={() => setAddProductModalIsOpen(true)}>
                         Add Product
                     </button>
@@ -280,14 +284,30 @@ const ProductManagement: React.FC = () => {
                 />
             </Modal>
             <Modal isOpen={addCategoryModalIsOpen} onRequestClose={() => setAddCategoryModalIsOpen(false)} contentLabel="Add Category">
-                <AddCategory />
+                <AddCategory onCategoryAdded={() => {
+                    fetchProducts(); // Reload products
+                    setAddCategoryModalIsOpen(false); // Close modal
+                }} />
+            </Modal>
+            <Modal 
+                isOpen={updateCategoryModalIsOpen} 
+                onRequestClose={() => setUpdateCategoryModalIsOpen(false)} 
+                contentLabel="Update Category"
+            >
+                <UpdateCategory onCategoryUpdated={() => {
+                    fetchProducts(); // Reload products
+                    setUpdateCategoryModalIsOpen(false); // Close modal
+                }} />
             </Modal>
             <Modal 
                 isOpen={deleteCategoryModalIsOpen} 
                 onRequestClose={() => setDeleteCategoryModalIsOpen(false)} 
                 contentLabel="Delete Category"
             >
-                <DeleteCategory />
+                <DeleteCategory onCategoryDeleted={() => {
+                    fetchProducts(); // Reload products
+                    setDeleteCategoryModalIsOpen(false); // Close modal
+                }} />
             </Modal>
         </div>
     );

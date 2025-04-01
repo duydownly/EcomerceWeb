@@ -70,6 +70,12 @@ const EditProduct: React.FC<{ product: any; onProductUpdated: () => void }> = ({
         setCategorySelections(updatedSelections);
     };
 
+    // Filter categories to exclude already selected ones except for the current dropdown
+    const getAvailableCategories = (currentIndex: number) => {
+        const selectedCategoryIds = categorySelections.filter((_, i) => i !== currentIndex);
+        return categories.filter((category) => !selectedCategoryIds.includes(category.id));
+    };
+
     const handleAddMoreCategory = () => {
         setCategorySelections([...categorySelections, '']);
     };
@@ -145,7 +151,7 @@ const EditProduct: React.FC<{ product: any; onProductUpdated: () => void }> = ({
                                 required
                             >
                                 <option value="">Select Category</option>
-                                {categories.map((category) => (
+                                {getAvailableCategories(index).map((category) => (
                                     <option key={category.id} value={category.id}>
                                         {category.name}
                                     </option>

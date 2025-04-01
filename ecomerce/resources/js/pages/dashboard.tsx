@@ -32,6 +32,7 @@ const Dashboard: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [searchTerm, setSearchTerm] = useState<string>(""); // Add state for search term
 
     useEffect(() => {
         console.log("User Data:", user);
@@ -62,12 +63,11 @@ const Dashboard: React.FC = () => {
     
     if (loading) return <p>Loading...</p>;
 
-    // Lọc sản phẩm theo danh mục được chọn
-    const filteredProducts = selectedCategory
-        ? products.filter((product) =>
-            product.categories.some((category) => category.id === selectedCategory)
-        )
-        : products;
+    // Lọc sản phẩm theo danh mục và từ khóa tìm kiếm
+    const filteredProducts = products.filter((product) =>
+        (!selectedCategory || product.categories.some((category) => category.id === selectedCategory)) &&
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <AppLayout>
@@ -76,7 +76,14 @@ const Dashboard: React.FC = () => {
                 {/* Main Content */}
                 <div className="flex-1 p-6 text-center">
                 <h1 className="text-4xl font-bold mb-6">Welcome to Toyoto Shop!</h1>
-                <br/>
+                <br />
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    className="px-4 py-2 border rounded mb-4 w-full"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)} // Update search term on input change
+                />
                     {selectedProduct ? (
                         <ProductDetails product={selectedProduct} />
                     ) : (

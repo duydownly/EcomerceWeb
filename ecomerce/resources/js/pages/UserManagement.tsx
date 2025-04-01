@@ -18,12 +18,8 @@ const UserManagement = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [editModalIsOpen, setEditModalIsOpen] = useState(false);
-
-    useEffect(() => {
-        axios.get('/getusers')
-            .then(response => setUsers(response.data))
-            .catch(error => console.error('Error fetching users:', error));
-    }, []);
+    const [isLoading, setIsLoading] = useState(true); // Add loading state
+    const [error, setError] = useState<string | null>(null); // Add error state
 
     const toggleBan = (userId: number, userName: string, isBanned: boolean) => {
         const action = isBanned ? 'unban' : 'ban';
@@ -38,12 +34,18 @@ const UserManagement = () => {
             })
             .catch(error => console.error(`Error updating ban status:`, error));
     };
+
     const fetchUsers = () => {
+        setIsLoading(true); // Set loading to true before fetching
         axios.get('/getusers')
             .then(response => setUsers(response.data))
-            .catch(error => console.error('Error fetching users:', error));
+            .catch(error => {
+                console.error('Error fetching users:', error);
+                setError('Failed to fetch users'); // Set error message
+            })
+            .finally(() => setIsLoading(false)); // Set loading to false after fetching
     };
-    
+
     const openEditModal = (user: User) => {
         setSelectedUser(user);
         setEditModalIsOpen(true);
@@ -54,11 +56,19 @@ const UserManagement = () => {
         setSelectedUser(null);
         fetchUsers(); // Gọi lại API để cập nhật danh sách user
     };
-    
+
     useEffect(() => {
         fetchUsers();
     }, []);
-    
+
+    if (isLoading) {
+        return <div className="text-center py-8">Loading...</div>; // Show loading message
+    }
+
+    if (error) {
+        return <div className="text-center py-8 text-red-500">Error: {error}</div>; // Show error message
+    }
+
     return (
         <div>
             <h2 className="text-xl font-bold mb-4">Quản lý khách hàng</h2>

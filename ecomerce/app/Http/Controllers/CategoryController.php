@@ -95,4 +95,43 @@ class CategoryController extends Controller
             ], 500);
         }
     }
+
+    public function updateCategory(Request $request, $id)
+    {
+        Log::info('API updateCategory received a request', ['request_data' => $request->all()]);
+
+        try {
+            $request->validate([
+                'name' => 'required|string|unique:categories,name',
+            ]);
+            Log::info('Validation passed');
+
+            // Update category using raw SQL
+            $updated = DB::update('UPDATE categories SET name = ?, updated_at = NOW() WHERE id = ?', [$request->name, $id]);
+
+            if ($updated) {
+                Log::info('Category updated successfully');
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Category updated successfully!',
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Category not found!',
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error in updating category', [
+                'error_message' => $e->getMessage(),
+                'stack_trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong!',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
