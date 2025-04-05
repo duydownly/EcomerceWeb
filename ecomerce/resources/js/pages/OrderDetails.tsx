@@ -41,7 +41,7 @@ const OrderDetails: React.FC<OrderDetailsProps> = ({ order }) => {
                                 <p><strong>Price:</strong> {product.price}</p>
                             </div>
                             <div className="product-image-container">
-                                <img src={product.image_product} alt={product.product_name} className="product-image" />
+                                <img src={`/storage/${product.image_product}`} alt={product.product_name} className="product-image" />
                             </div>
                         </li>
                     ))}

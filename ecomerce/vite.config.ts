@@ -13,6 +13,9 @@ export default defineConfig({
             protocol: 'ws',
             host: 'localhost',
         },
+        watch: {
+            usePolling: true, // Enable polling for file changes
+        },
     },
     plugins: [
         laravel({

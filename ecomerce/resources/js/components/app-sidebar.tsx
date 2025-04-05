@@ -3,23 +3,31 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, List, Home } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, List, Home, Package, Users, ShoppingCart } from 'lucide-react';
 import AppLogo from './app-logo';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-// Mục menu chính
-const mainNavItems: NavItem[] = [
+// Mảng menu chính
+const mainNavItems: { key: string; title: string; href?: string; icon: any }[] = [
     {
+        key: 'dashboard',
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
     },
     {
+        key: 'home',
         title: 'Home',
-        href: '/',
-        icon: Home, // Dùng icon Home
+        href: '/', // Ensure the correct href is set
+        icon: Home,
     },
+    {
+        key: 'orders',
+        title: 'Thông tin đơn hàng',
+        icon: Package,
+    },
+    
 ];
 
 // Mục menu footer
@@ -36,9 +44,18 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
-export function AppSidebar({ onCategorySelect }: { onCategorySelect: (category: string | null) => void }) {
+export function AppSidebar({
+    selectedMenu,
+    onMenuSelect,
+    onCategorySelect,
+}: {
+    selectedMenu: 'orders' | null;
+    onMenuSelect: (menu: 'orders' | null) => void;
+    onCategorySelect: (category: string | null) => void;
+}) {
     const [categories, setCategories] = useState<Record<string, string>>({});
 
+    // Fetch categories từ API
     useEffect(() => {
         async function fetchCategories() {
             try {
@@ -86,7 +103,7 @@ export function AppSidebar({ onCategorySelect }: { onCategorySelect: (category: 
                                 <rect width="18" height="18" x="3" y="3" rx="2"></rect>
                                 <path d="M9 3v18"></path>
                             </svg>
-                            <span className="sr-only">Toggssse Sidebar</span>
+                            <span className="sr-only">Toggle Sidebar</span>
                         </button>
                     </div>
                 </header>
@@ -94,15 +111,28 @@ export function AppSidebar({ onCategorySelect }: { onCategorySelect: (category: 
 
             <SidebarContent>
                 {/* Menu Chính */}
-                <SidebarMenu>
+                <SidebarMenu className="mt-4 space-y-2">
                     {mainNavItems.map((item) => (
-                        <SidebarMenuItem key={item.href}>
-                            <SidebarMenuButton asChild>
+                        <SidebarMenuItem key={item.key}>
+                            {item.href ? (
                                 <Link href={item.href}>
-                                    {item.icon && <item.icon className="w-5 h-5 mr-2" />}
-                                    {item.title}
+                                    <SidebarMenuButton
+                                        onClick={() => onMenuSelect(item.key as 'orders')}
+                                        className={selectedMenu === item.key ? 'bg-gray-200 font-bold' : ''}
+                                    >
+                                        <item.icon className="w-5 h-5 mr-2" />
+                                        {item.title}
+                                    </SidebarMenuButton>
                                 </Link>
-                            </SidebarMenuButton>
+                            ) : (
+                                <SidebarMenuButton
+                                    onClick={() => onMenuSelect(item.key as 'orders')}
+                                    className={selectedMenu === item.key ? 'bg-gray-200 font-bold' : ''}
+                                >
+                                    <item.icon className="w-5 h-5 mr-2" />
+                                    {item.title}
+                                </SidebarMenuButton>
+                            )}
                         </SidebarMenuItem>
                     ))}
                 </SidebarMenu>

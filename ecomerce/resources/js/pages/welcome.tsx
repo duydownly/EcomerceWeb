@@ -44,6 +44,14 @@ export default function Welcome() {
             });
     }, []);
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex((prevIndex) => (prevIndex === images.length - 1 ? 0 : prevIndex + 1));
+        }, 6000); // Change image every 30 seconds
+
+        return () => clearInterval(interval); // Cleanup interval on component unmount
+    }, [images.length]);
+
     const prevImage = () => {
         setCurrentIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
     };

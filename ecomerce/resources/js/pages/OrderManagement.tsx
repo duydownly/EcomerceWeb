@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import OrderDetails from './OrderDetails'; // Import the OrderDetails component
 
 // Enum for order status
 enum OrderStatus {
     Pending = "Pending",
+    Preparing = "Preparing", // New status added
     Shipping = "Shipping",
     Delivered = "Delivered",
     Refuse = "Refuse",
@@ -31,54 +33,59 @@ interface Order {
 }
 
 const OrderManagement: React.FC = () => {
-    const [orders, setOrders] = useState<Order[]>([
-        {
-            id: 1,
-            customerName: 'John Doe',
-            email: 'john@example.com',
-            phone: '123456789',
-            address: '123 Main St',
-            status: OrderStatus.Pending,
-            products: [
-                { 
-                    product_id: 101, 
-                    product_name: 'Product Asadsadasdsadasdasdasdsadasdsa', 
-                    image_product: '/storage/images/image1.png', 
-                    quantity: 1, 
-                    price: '40,000 VND' 
-                },
-                { 
-                    product_id: 102, 
-                    product_name: 'Product B', 
-                    image_product: '/storage/images/kb48SgBl3A9zOTqGvAGYZ2rbbti4ts5z1WZBTj7J.png', 
-                    quantity: 2, 
-                    price: '80,000 VND' 
-                },
-            ],
-        },
-        {
-            id: 2,
-            customerName: 'Jane Smith',
-            email: 'jane@example.com',
-            phone: '987654321',
-            address: '456 Elm St',
-            status: OrderStatus.Pending,
-            products: [
-                { 
-                    product_id: 103, 
-                    product_name: 'Product C', 
-                    image_product: '/storage/images/image1.png', 
-                    quantity: 1, 
-                    price: '50,000 VND' 
-                },
-            ],
-        },
-    ]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null); // State for selected order
+
+    useEffect(() => {
+        // Fetch orders from the API
+        const fetchOrders = async () => {
+            try {
+                const response = await axios.post('/getorderforadmin');
+                console.log('API Response:', response.data); // Log the raw API response
+                const data = response.data;
+
+                               // Transform data into the required format
+                               const groupedOrders: { [key: number]: Order } = {};
+                               data.forEach((item: any) => {
+                                   if (!groupedOrders[item.order_id]) {
+                                       groupedOrders[item.order_id] = {
+                                           id: item.order_id,
+                                           customerName: item.customer_name,
+                                           email: item.email,
+                                           phone: item.phone,
+                                           address: item.address,
+                                           status: item.status,
+                                           products: [],
+                                       };
+                                   }
+                                   groupedOrders[item.order_id].products.push({
+                                       product_id: item.product_id,
+                                       product_name: item.product_name,
+                                       image_product: item.image_product,
+                                       quantity: item.quantity,
+                                       price: item.price,
+                                   });
+                               });
+               
+
+                setOrders(Object.values(groupedOrders));
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            }
+        };
+
+        fetchOrders();
+    }, []);
 
     const handleAccept = (id: number) => {
         setOrders(orders.map(order => 
-            order.id === id ? { ...order, status: OrderStatus.Shipping } : order
+            order.id === id ? { ...order, status: OrderStatus.Preparing } : order // Automatically set to Preparing
+        ));
+    };
+
+    const handlePrepared = (id: number) => {
+        setOrders(orders.map(order => 
+            order.id === id ? { ...order, status: OrderStatus.Shipping } : order // Transition to Shipping
         ));
     };
 
@@ -151,6 +158,16 @@ const OrderManagement: React.FC = () => {
                                             onClick={() => handleReject(order.id)}
                                         >
                                             Cancel
+                                        </button>
+                                    </>
+                                )}
+                                {order.status === OrderStatus.Preparing && (
+                                    <>
+                                        <button 
+                                            className="bg-blue-500 text-white px-4 py-2 mr-2 rounded"
+                                            onClick={() => handlePrepared(order.id)}
+                                        >
+                                            Prepared
                                         </button>
                                     </>
                                 )}

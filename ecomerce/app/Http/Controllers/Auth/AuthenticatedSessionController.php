@@ -28,27 +28,27 @@ class AuthenticatedSessionController extends Controller
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request): RedirectResponse
-{
-    $request->authenticate();
-    $request->session()->regenerate();
+    {
+        $request->authenticate();
+        $request->session()->regenerate();
 
-    // Lấy thông tin user sau khi đăng nhập
-    $user = Auth::user();
+        // Lấy thông tin user sau khi đăng nhập
+        $user = Auth::user();
 
-    // Điều hướng đến dashboard admin nếu user là admin
-    $redirectRoute = $user->is_admin ? 'dashboardadmin' : 'dashboard';
+        // Điều hướng đến dashboard admin nếu user là admin
+        $redirectRoute = $user->is_admin ? 'dashboardadmin' : 'dashboard';
 
-    return redirect()->intended(route($redirectRoute, absolute: false))
-    ->with('flash', [
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'is_admin' => $user->is_admin, 
-        ]
-    ]);
-
-}
+        return redirect()->intended(route($redirectRoute, absolute: false))
+            ->with('flash', [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'is_admin' => $user->is_admin, 
+                ]
+            ])
+            ->with('localStorageScript', "<script>localStorage.setItem('user_id', '{$user->id}');</script>");
+    }
 
     /**
      * Destroy an authenticated session.
@@ -60,6 +60,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')
+            ->with('localStorageScript', "<script>localStorage.removeItem('user_id');</script>");
     }
 }
